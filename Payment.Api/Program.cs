@@ -1,7 +1,3 @@
-using MassTransit;
-using Payment.Api.Consumers;
-using Shared;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -9,21 +5,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-builder.Services.AddMassTransit(configurator =>
-{
-    configurator.AddConsumer<StockReservedEventConsumer>();
-
-    configurator.UsingRabbitMq(
-        (_busRegistrationContext, _rabbitMQBusFactoryConfigurator) =>
-        {
-            _rabbitMQBusFactoryConfigurator.Host(builder.Configuration.GetConnectionString("RabbitMQ"));
-
-            _rabbitMQBusFactoryConfigurator.ReceiveEndpoint(RabbitMQSettings.Payment_StockReservedEventQueue,
-                e => { e.ConfigureConsumer<StockReservedEventConsumer>(_busRegistrationContext); });
-        });
-});
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

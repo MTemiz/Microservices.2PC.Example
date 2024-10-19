@@ -1,0 +1,71 @@
+﻿services:
+  order.api:
+    image: order.api
+    container_name: order.api
+    build:
+      context: .
+      dockerfile: Order.Api/Dockerfile
+    ports:
+      - "7001:8080"
+    environment:
+      - "ConnectionStrings:SqlServer=Server=sqlserver,1433;Database=OrderDb; User ID=sa; Password=Strong@Passw0rd; TrustServerCertificate=True"
+      - "ConnectionStrings:RabbitMQ=.."
+    depends_on:
+      - sqlserver                                               
+      
+  payment.api:
+    image: payment.api
+    container_name: payment.api
+    build:
+      context: .
+      dockerfile: Payment.Api/Dockerfile
+    environment:
+      - "ConnectionStrings:RabbitMQ=.."
+    ports:
+      - "7002:8080"
+      
+  stock.api:
+    image: stock.api
+    container_name: stock.api
+    build:
+      context: .
+      dockerfile: Stock.Api/Dockerfile
+    ports:
+      - "7003:8080"
+    environment:
+      - "ConnectionStrings:MongoDB=mongodb://mongodb:27017"
+      - "ConnectionStrings:RabbitMQ=.."
+    depends_on:
+      - mongodb
+
+  mail.api:
+    image: mail.api
+    container_name: mail.api
+    build:
+      context: .
+      dockerfile: Mail.Api/Dockerfile
+    environment:
+      - "ConnectionStrings:RabbitMQ=.."
+      
+  sqlserver:
+      image: mcr.microsoft.com/mssql/server:2019-latest
+      container_name: sqlserver
+      environment:
+        - SA_PASSWORD=Strong@Passw0rd
+        - ACCEPT_EULA=Y
+      ports:
+        - "1433:1433"
+      volumes:
+        - sqlserver_data:/var/opt/mssql
+  
+  mongodb:
+       image: mongo:latest
+       container_name: mongodb
+       ports:
+         - "27017:27017"
+       volumes:
+         - mongodb_data:/data/db 
+        
+volumes:
+  sqlserver_data:
+  mongodb_data:

@@ -123,14 +123,15 @@ public class TransactionService(IHttpClientFactory _httpFactory, TwoPhaseCommitC
         {
             try
             {
-                if (transactionNode.TransactionState != TransactionState.Done) continue;
-
-                var response = await (transactionNode.Node.Name switch
+                if (transactionNode.TransactionState == Enums.TransactionState.Done)
                 {
-                    "Order.Api" => _orderHttpClient.GetAsync("rollback"),
-                    "Payment.Api" => _paymentHttpClient.GetAsync("rollback"),
-                    "Stock.Api" => _stockHttpClient.GetAsync("rollback"),
-                });
+                    _ = await (transactionNode.Node.Name switch
+                    {
+                        "Order.API" => _orderHttpClient.GetAsync("rollback"),
+                        "Stock.API" => _stockHttpClient.GetAsync("rollback"),
+                        "Payment.API" => _paymentHttpClient.GetAsync("rollback"),
+                    });
+                }
 
                 transactionNode.TransactionState = TransactionState.Abort;
             }
